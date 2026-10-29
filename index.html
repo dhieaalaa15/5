@@ -7,13 +7,17 @@
   <link rel="icon" type="image/png" href="https://img.icons8.com/emoji/96/test-tube-emoji.png">
   <style>
     :root {
-      --primary: #4f46e5;
-      --primary-hover: #4338ca;
-      --bg: #f3f4f6;
-      --card-bg: #ffffff;
-      --text: #1f2937;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --bg: #09090b;
+      --card-bg: #18181b;
+      --border-color: #27272a;
+      --text: #f4f4f5;
+      --text-muted: #a1a1aa;
       --success: #10b981;
+      --success-bg: #064e3b;
       --error: #ef4444;
+      --error-bg: #7f1d1d;
     }
 
     * {
@@ -35,10 +39,11 @@
 
     .container {
       background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
       border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
       width: 100%;
-      max-width: 600px;
+      max-width: 650px;
       padding: 30px;
       text-align: center;
       position: relative;
@@ -46,13 +51,13 @@
     }
 
     h1 {
-      color: var(--primary);
+      color: #818cf8;
       margin-bottom: 15px;
       font-size: 2rem;
     }
 
     p {
-      color: #4b5563;
+      color: var(--text-muted);
       margin-bottom: 25px;
       font-size: 1.1rem;
       line-height: 1.6;
@@ -83,8 +88,8 @@
     }
 
     .option-btn {
-      background-color: #f9fafb;
-      border: 2px solid #e5e7eb;
+      background-color: #27272a;
+      border: 2px solid var(--border-color);
       color: var(--text);
       padding: 14px;
       border-radius: 8px;
@@ -96,19 +101,19 @@
 
     .option-btn:hover {
       border-color: var(--primary);
-      background-color: #eeefef;
+      background-color: #3f3f46;
     }
 
     .option-btn.correct {
-      background-color: #d1fae5;
-      border-color: var(--success);
-      color: #065f46;
+      background-color: var(--success-bg) !important;
+      border-color: var(--success) !important;
+      color: #a7f3d0 !important;
     }
 
     .option-btn.wrong {
-      background-color: #fee2e2;
-      border-color: var(--error);
-      color: #991b1b;
+      background-color: var(--error-bg) !important;
+      border-color: var(--error) !important;
+      color: #fecaca !important;
       animation: shake 0.4s ease;
     }
 
@@ -121,9 +126,13 @@
     .rights {
       margin-top: 25px;
       padding-top: 15px;
-      border-top: 1px solid #e5e7eb;
+      border-top: 1px solid var(--border-color);
       font-size: 0.9rem;
-      color: #6b7280;
+      color: var(--text-muted);
+    }
+
+    .rights strong {
+      color: var(--text);
     }
 
     .hidden { display: none; }
@@ -132,24 +141,24 @@
 <body>
 
   <div class="container">
-    <!-- شاشة الترحب -->
+    <!-- شاشة الترحيب -->
     <div id="welcome-screen">
       <h1>🧪 أبطال العلوم 🧪</h1>
-      <p>أهلاً بكم في اختبار العلوم التفاعلي للصف السادس الابتدائي (الفصل الأول والثاني)!<br>هل أنت جاهز لتحدي الـ 20 سؤالاً؟</p>
+      <p>أهلاً بكم في اختبار العلوم التفاعلي للصف السادس الابتدائي (الفصل الأول والثاني)!<br>هل أنت جاهز لتحدي الـ 50 سؤالاً؟</p>
       <button class="btn" onclick="startQuiz()">ابدأ الاختبار الآن</button>
     </div>
 
     <!-- شاشة الاختبار -->
     <div id="quiz-screen" class="hidden">
-      <h2 id="question-text" style="margin-bottom: 20px;">الأسئلة ستظهر هنا...</h2>
+      <h2 id="question-text" style="margin-bottom: 20px; color: var(--text);">الأسئلة ستظهر هنا...</h2>
       <div id="options-container" class="options-grid"></div>
     </div>
 
     <!-- شاشة النتيجة -->
     <div id="result-screen" class="hidden">
       <h1>🎉 النتيجة النهائية 🎉</h1>
-      <p id="score-text"></p>
-      <button class="btn" onclick="restartQuiz()">إعادة الاختبار</button>
+      <p id="score-text" style="font-size: 1.4rem; color: #a7f3d0; margin-top: 15px;"></p>
+      <button class="btn" onclick="restartQuiz()" style="margin-top: 20px;">إعادة الاختبار</button>
     </div>
 
     <!-- الحقوق -->
@@ -159,6 +168,55 @@
   </div>
 
   <script>
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playCorrectSound() {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(659.25, audioCtx.currentTime + 0.1);
+      osc.frequency.exponentialRampToValueAtTime(783.99, audioCtx.currentTime + 0.2);
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.4);
+    }
+
+    function playWrongSound() {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.3);
+    }
+
+    function playWinSound() {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const notes = [523.25, 659.25, 783.99, 1046.50];
+      notes.forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime + idx * 0.12);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + idx * 0.12 + 0.3);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + idx * 0.12);
+        osc.stop(audioCtx.currentTime + idx * 0.12 + 0.3);
+      });
+    }
+
     const questions = [
       { q: "ما هو العضو المسؤول عن التذوق؟", options: ["الأنف", "اللسان", "الأذن", "العين"], answer: 1 },
       { q: "ما هي الوحدة الأساسية لبناء جسم الكائن الحي؟", options: ["الخلية", "النسيج", "العضو", "الجهاز"], answer: 0 },
@@ -176,16 +234,47 @@
       { q: "ما هو العضو المسؤول عن عملية الهضم الأساسية للامتصاص؟", options: ["المعدة", "الأمعاء الدقيقة", "المرئ", "الفم"], answer: 1 },
       { q: "جهاز يستخدم لقياس درجة الحرارة هو:", options: ["الميزان", "المسطرة", "الترمومتر", "البارومتر"], answer: 2 },
       { q: "تسمى المادة التي لا تسمح بمرور الضوء من خلالها مادة:", options: ["شفافة", "شبه شفافة", "معتمة", "مرنة"], answer: 2 },
-      { q: "أي الجسيمات التالية توجد داخل نوات الذرة؟", options: ["البروتونات والنيوترونات", "الالكترونات فقط", "الالكترونات والبروتونات", "النيوترونات فقط"], answer: 0 },
-      { q: "تسمى تحول المادة من الحالة الصلبة إلى السائلة مباشرة بـ:", options: ["التجمد", "الانصهار", "التكثف", "السامي"], answer: 1 },
+      { q: "أي الجسيمات التالية توجد داخل نواة الذرة؟", options: ["البروتونات والنيوترونات", "الالكترونات فقط", "الالكترونات والبروتونات", "النيوترونات فقط"], answer: 0 },
+      { q: "تسمى تحول المادة من الحالة الصلبة إلى السائلة بـ:", options: ["التجمد", "الانصهار", "التكثف", "التسامي"], answer: 1 },
       { q: "العضو الذي يحمي المخ هو:", options: ["القفص الصدري", "الجمجمة", "العمود الفقري", "الحوض"], answer: 1 },
-      { q: "ما الجهاز المسؤول عن الحركة في جسم الإنسان؟", options: ["الجهاز الهيكلي والعضلي", "الجهاز الدوري", "الجهاز التنفسي", "الجهاز العصبي"], answer: 0 }
+      { q: "ما الجهاز المسؤول عن الحركة في جسم الإنسان؟", options: ["الجهاز الهيكلي والعضلي", "الجهاز الدوري", "الجهاز التنفسي", "الجهاز العصبي"], answer: 0 },
+      { q: "ما هو الطبقة الخارجية من الجلد التي تحمي الجسم؟", options: ["البشرة", "الأدمة", "الدهن", "العضل"], answer: 0 },
+      { q: "عضو الحس المسؤول عن رؤية الألوان والأشياء هو:", options: ["الأنف", "العين", "الأذن", "الجلد"], answer: 1 },
+      { q: "أي المكونات التالية يحمل الأكسجين في الدم؟", options: ["خلايا الدم الحمراء", "خلايا الدم البيضاء", "الصفائح الدموية", "البلازما"], answer: 0 },
+      { q: "جهاز يتكون من الدماغ والحبل الشوكي والأعصاب هو:", options: ["الجهاز العصبي", "الجهاز الدوري", "الجهاز الهضمي", "الجهاز التنفسي"], answer: 0 },
+      { q: "المفصل الذي يربط الساق بالقدم هو مفصل:", options: ["الكاحل", "الركبة", "الكتف", "المرفق"], answer: 0 },
+      { q: "عملية تحول الغاز إلى سائل تسمى:", options: ["التكثف", "التبخر", "الانصهار", "التجمد"], answer: 0 },
+      { q: "أحد أجزاء الذرة يحمل شحنة سالبة يدور حول النواة:", options: ["البروتون", "النيوترون", "الإلكترون", "الفتون"], answer: 2 },
+      { q: "ما هو العنصر الذي يمثله الرمز الكيميائي O؟", options: ["الحديد", "الأكسجين", "الذهب", "النيتروجين"], answer: 1 },
+      { q: "تسمى عملية اتحاد الأكسجين مع المواد بسرعة مع انبعاث حرارة وضوء بـ:", options: ["الاحتراق", "الصدأ", "التخمر", "التبخر"], answer: 0 },
+      { q: "أي الأجسام التالية يعتبر عازلاً للحرارة؟", options: ["الحديد", "الألومنيوم", "الخشب", "النحاس"], answer: 2 },
+      { q: "تتحرك السيال العصبي من وألى الدماغ عبر:", options: ["الأعصاب", "الأوردة", "الشرايين", "العضلات"], answer: 0 },
+      { q: "العضو الأساسي في الجهاز التنفسي هو:", options: ["القلب", "الرئتان", "المعدة", "الكبد"], answer: 1 },
+      { q: "من وظائف خلايا الدم البيضاء:", options: ["نقل الأكسجين", "الدفاع عن الجسم ضد الأمراض", "تجلط الدم", "تغذية الخلايا"], answer: 1 },
+      { q: "تستمد الكواكب ضوءها وحرارتها من:", options: ["القمر", "الشمس", "المجرات", "السحب"], answer: 1 },
+      { q: "ظاهرة تنتج عن دوران الأرض حول محورها هي:", options: ["الفصول الأربعة", "الليل والنهار", "الخسوف", "الكسوف"], answer: 1 },
+      { q: "يسمى التغير الذي ينتج عنه مواد جديدة تختلف في خصائصها بـ:", options: ["التغير الفيزيائي", "التغير الكيميائي", "التغير الميكانيكي", "التغير الحيوي"], answer: 1 },
+      { q: "انكماش المواد وتبدّل حجمها يزداد بـ:", options: ["التسخين", "التبريد", "الضغط", "الترشيح"], answer: 1 },
+      { q: "المادة التي تذوب في السائل لتكوين محلول تسمى:", options: ["المذيب", "المذاب", "الراسب", "المخلوط"], answer: 1 },
+      { q: "خاصية يمكن ملاحظتها أو قياسها دون تغيير هوية المادة هي:", options: ["الخاصية الكيميائية", "الخاصية الفيزيائية", "التفاعل الكيميائي", "التركيب الذري"], answer: 1 },
+      { q: "وحدة قياس الكتلة في النظام الدولي هي:", options: ["المتر", "الكيلوغرام", "النيوتن", "الثانية"], answer: 1 },
+      { q: "ما هو العضو المسؤول عن تنقية الدم من السموم والفضلات؟", options: ["الكلية", "الرئة", "اللسان", "المعدة"], answer: 0 },
+      { q: "شكل الطاقة المخزونة في الغذاء أو الوقود هي طاقة:", options: ["حرارية", "كيميائية", "حركية", "ضوئية"], answer: 1 },
+      { q: "المرايا التي تعكس الصور بشكل مكبّر هي المرايا:", options: ["المقعرة", "المحدبة", "المستوية", "المنشورية"], answer: 0 },
+      { q: "ينتقل الضوء في خطوط:", options: ["منحنية", "مستقيمة", "دائرية", "منكسرة"], answer: 1 },
+      { q: "أنواع الشحنات الكهربائية هي:", options: ["موجبة وسالبة", "شمالية وجنوبية", "حارة وباردة", "قوية وضعيفة"], answer: 0 },
+      { q: "تسمى المسارات المغلقة التي تتدفق من خلالها الكهرباء بـ:", options: ["المولدات", "الدائرة الكهربائية", "المحولات", "المكثفات"], answer: 1 },
+      { q: "القطبان المغناطيسيان المتشابهان:", options: ["يتجاذبان", "يتقاطعان", "يتنافران", "يتحدان"], answer: 2 },
+      { q: "تحدث ظاهرة كسوف الشمس عندما يكون:", options: ["الأرض بين الشمس والقمر", "القمر بين الشمس والأرض", "الشمس بين الأرض والقمر", "المريخ بين الشمس والأرض"], answer: 1 },
+      { q: "من الأمثلة على التغير الفيزيائي:", options: ["صدأ الحديد", "حرق الخشب", "تقطيع الورق", "طهي الطعام"], answer: 2 },
+      { q: "نوع القوة التي تبطئ حركة الأجسام وتنشأ بين سطحين متلامسين هي:", options: ["الجاذبية", "الاحتكاك", "المغناطيسية", "الكهربائية"], answer: 1 }
     ];
 
     let currentQ = 0;
     let score = 0;
 
     function startQuiz() {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
       document.getElementById('welcome-screen').classList.add('hidden');
       document.getElementById('quiz-screen').classList.remove('hidden');
       showQuestion();
@@ -193,7 +282,7 @@
 
     function showQuestion() {
       const q = questions[currentQ];
-      document.getElementById('question-text').innerText = `السؤال ${currentQ + 1}: ${q.q}`;
+      document.getElementById('question-text').innerText = `السؤال ${currentQ + 1} من 50: ${q.q}`;
       const container = document.getElementById('options-container');
       container.innerHTML = '';
 
@@ -213,9 +302,11 @@
 
       if (selected === q.answer) {
         btn.classList.add('correct');
+        playCorrectSound();
         score++;
       } else {
         btn.classList.add('wrong');
+        playWrongSound();
         buttons[q.answer].classList.add('correct');
       }
 
@@ -230,9 +321,10 @@
     }
 
     function showResults() {
+      playWinSound();
       document.getElementById('quiz-screen').classList.add('hidden');
       document.getElementById('result-screen').classList.remove('hidden');
-      document.getElementById('score-text').innerText = `لقد حصلت على ${score} من 20!`;
+      document.getElementById('score-text').innerText = `لقد حصلت على ${score} من 50!`;
     }
 
     function restartQuiz() {
